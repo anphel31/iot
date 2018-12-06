@@ -16,16 +16,17 @@ namespace System.Device.Pwm.Drivers
         public Windows10PwmDriverChip(int chipIndex)
         {
             // Open the Windows PWM controller for the specified PWM chip
-            string controllerFriendlyName = $"PWM{chipIndex}";
-            string deviceSelector = WinPwm.PwmController.GetDeviceSelector(controllerFriendlyName);
-
+            string deviceSelector = WinPwm.PwmController.GetDeviceSelector();
             DeviceInformationCollection deviceInformationCollection = DeviceInformation.FindAllAsync(deviceSelector).WaitForCompletion();
             if (deviceInformationCollection.Count == 0)
             {
                 throw new ArgumentException($"No PWM device exists for PWM chip at index {chipIndex}", $"{nameof(chipIndex)}");
             }
-
-            string deviceId = deviceInformationCollection[0].Id;
+            if((chipIndex + 1) > deviceInformationCollection.Count)
+            {
+                throw new ArgumentException("PWM Chip index out of range");
+            }
+            string deviceId = deviceInformationCollection[chipIndex].Id;
             _winController = WinPwm.PwmController.FromIdAsync(deviceId).WaitForCompletion();
         }
 
